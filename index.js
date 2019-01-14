@@ -36,7 +36,7 @@ app.post('/start', (request, response) => {
 // Handle POST request to '/move'
 app.post('/move', (request, response) => {
   // NOTE: Do something here to generate your move
-
+  // Blah blah
   // Response data
   const data = {
     move: 'up', // one of: ['up','down','left','right']
