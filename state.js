@@ -1,3 +1,5 @@
+const aStar = require('a-star');
+
 let gameState;
 
 let exampleState = {  
@@ -85,15 +87,14 @@ const update = (newState) => {
     gameState = newState;
 };
 
-const moveInfo = (XY, move) => {
+const moveInfo = (snakeName, move) => {
     // Returns one of:
     // {type: "wall"}
     // {type: "body"}
     // {type: "contested", snakeLengths: [3, 4], food: false} - enemy snake(s) neighbors this square
     // {type: "uncontested", food: true} - uncontested square
-    
-    let x = XY.x;
-    let y = XY.y;
+    let XY = gameState.board.snakes.filter((snake) => snake.name == snakeName);
+    let { x, y } = XY;
 
     let newXY = move == "up" ? {x, y: y-1} :
                 move == "right" ? {x: x+1, y} :
@@ -116,8 +117,8 @@ const moveInfo = (XY, move) => {
 
     gameState.board.snakes.forEach((snake) => {
         const foundAtIndex = snake.body.indexOf(newXY);
-         //will not return body if it is occupied by the tail of a snake
-        if (foundAtIndex > -1 && foundAtIndex != snake.body.length - 1){
+         //will return body if it is occupied by the tail of a snake
+        if (foundAtIndex > -1){
             return {type: "body"}
         }
     });

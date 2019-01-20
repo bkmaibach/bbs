@@ -26,7 +26,7 @@ app.use(poweredByHandler);
 // Handle POST request to '/start'
 app.post('/start', (request, response) => {
   // forward the initial request to the state analyzer upon start
-  state.init(request.body);
+  state.update(request.body);
 
   // Response data
   const data = {
