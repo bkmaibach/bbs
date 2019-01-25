@@ -1,4 +1,4 @@
-let state = [
+let states = [
     {"game":{"id":"51f01b39-bb7a-4534-9de5-55f68c1346f7"},"turn":75,"board":{"height":15,"width":15,"food":[{"x":11,"y":11},{"x":8,"y":12},{"x":1,"y":12}, 
     {"x":0,"y":10},{"x":14,"y":3},{"x":3,"y":13},{"x":10,"y":0},{"x":0,"y":13},{"x":3,"y":4},{"x":14,"y":7}],"snakes":[{"id":"5d3ff63f-3c5c-4810-b636-3ca3ee0d5892",
     "name":"snek1","health":26,"body":[{"x":9,"y":6},{"x":9,"y":5},{"x":8,"y":5},{"x":8,"y":4}]},{"id":"5be34dee-85e9-4c1f-966e-343430f0bca9","name":"snek2","health":90,
@@ -23,4 +23,4 @@ let state = [
 
 module.exports = {
     states
-}
+};
