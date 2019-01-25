@@ -16,6 +16,7 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "l1-path-finder": "^1.0.0",
+    "lodash": "^4.17.11",
     "morgan": "^1.9.1",
     "ndarray": "^1.0.18"
   },
@@ -27,7 +28,7 @@
     "node": "8.x"
   },
   "scripts": {
-    "start": "PORT=5000 nodemon index.js",
+    "start": "PORT=9001 nodemon index.js",
     "preinstall": "rm package-lock.json"
   }
 }

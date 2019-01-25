@@ -1,4 +1,5 @@
 const aStar = require('a-star');
+const _ = require('lodash');
 
 let gameState;
 
@@ -85,61 +86,76 @@ let exampleState = {
 
 const update = (newState) => {
     gameState = newState;
+    if (gameState.turn == 75) {
+       console.log(JSON.stringify(gameState));
+    }
 };
+const getTurn = () => {
+   return gameState.turn;
+}
+const getMyPosition = () => {
+   return gameState.you.body[0];
+}
 
 const moveInfo = (snakeName, move) => {
-    // Returns one of:
-    // {type: "wall"}
-    // {type: "body"}
-    // {type: "contested", snakeLengths: [3, 4], food: false} - enemy snake(s) neighbors this square
-    // {type: "uncontested", food: true} - uncontested square
-    let XY = gameState.board.snakes.filter((snake) => snake.name == snakeName);
-    let { x, y } = XY;
+   // Returns one of:
+   // {type: "wall"}
+   // {type: "body"}
+   // {type: "contested", snakeLengths: [3, 4], food: false} - enemy snake(s) neighbors this square
+   // {type: "uncontested", food: true} - uncontested square
+   let returnVal = {type: "unknown"};
 
-    let newXY = move == "up" ? {x, y: y-1} :
+   let snake = gameState.board.snakes.filter((snake) => snake.name == snakeName)[0];
+   let { x, y } = snake.body[0];
+
+   let newXY = move == "up" ? {x, y: y-1} :
                 move == "right" ? {x: x+1, y} :
                 move == "down" ? {x, y: y+1} :
                 move == "left" ? {x: x-1, y} : null;
 
-    if (newXY == null) {
-        throw "Move " + move + " not recognized";
-    }
+   returnVal.newXY = newXY;
 
-    let newX = newXY.x;
-    let newY = newXY.y;
+   if (newXY == null) {
+      throw "Move " + move + " not recognized";
+   }
 
-    if(newX > gameState.board.width
-        || newX < 1
-        || newY > gameState.board.height
-        || newY < 1){
-            return {type: "wall"};
-    }
+   let newX = newXY.x;
+   let newY = newXY.y;
 
-    gameState.board.snakes.forEach((snake) => {
-        const foundAtIndex = snake.body.indexOf(newXY);
-         //will return body if it is occupied by the tail of a snake
-        if (foundAtIndex > -1){
-            return {type: "body"}
-        }
-    });
+   if(newX >= gameState.board.width
+      || newX < 0
+      || newY >= gameState.board.height
+      || newY < 0){
+         returnVal.type = "wall";
+   }
 
-    let returnVal = {type: "unknown"};
-    const neighbors = rectilinearNeighbors(newXY);
-    const ourName = gameState.you.name;
-    gameState.board.snakes.forEach((snake) => {
-        if (snake.name != ourName){
-            if(neighbors.indexOf(snake.body[0]) > -1){
-                returnVal.type = "contested";
-                returnVal.snakeLengths.push(snake.body.length);
-            }
-        }
-    });
+   gameState.board.snakes.forEach((snake) => {
 
-    returnVal.type == returnVal.type == "unknown" ? "uncontested" : returnVal.type;
+   for (let i = 0; i < snake.body.length - 1; i++) {
+      //console.log(snake.body[i], newXY, _.isEqual(snake.body[i], newXY));
+      if (_.isEqual(snake.body[i], newXY)){
+         returnVal.type = "body";
+      }
+   }
+   });
 
-    returnVal.food = gameState.board.food.indexOf(newXY) > -1;
+   
+   const neighbors = rectilinearNeighbors(newXY);
+   const ourName = gameState.you.name;
+   gameState.board.snakes.forEach((snake) => {
+      if (snake.name != ourName){
+         if(neighbors.indexOf(snake.body[0]) > -1){
+               returnVal.type = "contested";
+               returnVal.snakeLengths.push(snake.body.length);
+         }
+      }
+   });
 
-    return returnVal;
+   returnVal.type = (returnVal.type == "unknown") ? "uncontested" : returnVal.type;
+
+   returnVal.food = gameState.board.food.indexOf(newXY) > -1;
+
+   return returnVal;
 }
 
 const rectilinearNeighbors = function(XY) {
@@ -160,8 +176,9 @@ const rectilinearDistance = function(a, b) {
 };
 
 module.exports = {
-    init,
     update,
-    moveInfo
+    moveInfo,
+    getTurn,
+    getMyPosition
 };
 

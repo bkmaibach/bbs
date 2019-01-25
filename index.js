@@ -28,9 +28,14 @@ app.post('/start', (request, response) => {
   // forward the initial request to the state analyzer upon start
   state.update(request.body);
 
+  let number = Math.floor(Math.random() * Math.floor(16000000));
+  hexString = number.toString(16);
+  if (hexString.length % 2) {
+    hexString = '0' + hexString;
+  }
   // Response data
   const data = {
-    color: '#DFFF00',
+    color: '#'+hexString,
   }
 
   return response.json(data)
@@ -38,12 +43,35 @@ app.post('/start', (request, response) => {
 
 // Handle POST request to '/move'
 app.post('/move', (request, response) => {
+  //console.log("IN POST /MOVE");
   // update the board with the new moves
   state.update(request.body);
+  const moves = ['up','left','down','right'];
+  
+  const name = request.body.you.name;
+  let move;
+  var moveType;
+  var moveInfo;
+  let turn = state.getTurn();
+  let myPosition = state.getMyPosition();
+  let randomInt;
+  let timeout = 0;
+  while(moveType != 'uncontested' && timeout < 30){
+    randomInt = Math.floor(Math.random() * Math.floor(4))
+    move = moves[randomInt];
+    moveInfo = state.moveInfo(name, move);
+    moveType = moveInfo.type;
+    newXY = moveInfo.newXY;
+    timeout++;
+    if (timeout >= 30){
+      move = moves[0];
+    }
+  }
+  //console.log(turn, name, myPosition, randomInt, move, newXY, moveType);
 
   // Response data
   const data = {
-    move: 'right' // one of: ['up','down','left','right']
+    move // one of: ['up','left','down','right']
   }
 
   return response.json(data)

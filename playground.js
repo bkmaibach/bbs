@@ -1,87 +1,8 @@
-var ndarray = require('ndarray')
-var createPlanner = require('l1-path-finder')
+const ndarray = require('ndarray');
+const createPlanner = require('l1-path-finder');
+const _ = require('lodash');
+const states = require('./exampleStates').states;
 
-const exampleState = {  
-    "game":{  
-       "id":"9b85fabc-7e36-4708-8674-c12df577cf98"
-    },
-    "turn":4,
-    "board":{  
-       "height":19,
-       "width":19,
-       "food":[  
-          {  
-             "x":5,
-             "y":16
-          },
-          {  
-             "x":11,
-             "y":13
-          },
-
-       ],
-       "snakes":[  
-          {  
-             "id":"3fe966d8-4f12-461c-b998-037fa388ab1e",
-             "name":"snek2",
-             "health":96,
-             "body":[  
-                {  
-                   "x":17,
-                   "y":4
-                },
-                {  
-                   "x":16,
-                   "y":4
-                },
-                {  
-                   "x":16,
-                   "y":5
-                }
-             ]
-          },
-          {  
-             "id":"114617e0-d856-4055-a140-20079edd8ed1",
-             "name":"snek4",
-             "health":96,
-             "body":[  
-                {  
-                   "x":16,
-                   "y":12
-                },
-                {  
-                   "x":15,
-                   "y":12
-                },
-                {  
-                   "x":14,
-                   "y":12
-                }
-             ]
-          }
-       ]
-    },
-    "you":{  
-       "id":"3fe966d8-4f12-461c-b998-037fa388ab1e",
-       "name":"snek2",
-       "health":96,
-       "body":[  
-          {  
-             "x":17,
-             "y":4
-          },
-          {  
-             "x":16,
-             "y":4
-          },
-          {  
-             "x":16,
-             "y":5
-          }
-       ]
-    }
- }
- 
  
 //Create a maze as an ndarray
 var maze = ndarray([
@@ -167,13 +88,13 @@ var collisionArray = {
   knownTailDodges: [],
   addCollisionPoint: function (xy) {
     
-    this.knownCollisions.set((xy.x - 1), (xy.y - 1), 1);
+    this.knownCollisions.set((xy.x), (xy.y), 1);
   },
   addKnownTailDodge: function (xy) {
     knownTailDodges.push(xy);
   },
   isKnownTailDodge: function (xy) {
-    return this.knownTailDodges.indexOf(xy) > -1;
+    return getIndexOfValue(this.knownTailDodges, xy) > -1;
   }
 }
 
@@ -183,13 +104,14 @@ function getShortestPath (gameState, startXY, endXY) {
     
     //Find path
     var path = []
-    var dist = planner.search((startXY.x-1),(startXY.y - 1),  (endXY.x-1),(endXY.y-1),  path);
+    var dist = planner.search((startXY.x),(startXY.y),  (endXY.x),(endXY.y),  path);
     const steps = stepsInPath(path);
 
     const snakes = gameState.board.snakes;
     for(let i = 1, stepsLength = steps.length; i < stepsLength; i++){
         for(let j = 0, numSnakes = snakes.length; j < numSnakes; j++){
-            let segmentNumber = snakes[j].body.indexOf(steps[i]);
+            let segmentNumber = getIndexOfValue(snakes[j].body, steps[i]);;
+
             if(segmentNumber > -1  && !collisionArray.isKnownTailDodge(steps[i])){
                 const stepsToOccupy = i;
                 const stepsToVacate = snakes[j].body.length - segmentNumber;
@@ -211,6 +133,16 @@ function getShortestPath (gameState, startXY, endXY) {
     }
     return steps;
 };
+
+//similar to array.indexOf but works on value not reference
+function getIndexOfValue(array, entry){
+    for (let i = 0; i < array.length; i++) {
+        if (_.isEqual(array[i], entry)){
+           return i;
+        }
+    }
+    return -1;
+}
 
 
 //Log output
