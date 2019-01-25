@@ -54,7 +54,7 @@ let Finder = class {
                     const stepsToVacate = snakes[j].body.length - segmentNumber;
                     const tailDodge = stepsToOccupy >= stepsToVacate;
                     if (!tailDodge){
-                        let headToCollisionSection = snakes[j].body.slice(0, j + 1);
+                        let headToCollisionSection = snakes[j].body.slice(0, segmentNumber+1);
                         for (let k = 0, headToCollisionLength = headToCollisionSection.length; k < headToCollisionLength; k++){
                             this.addCollisionPoint(headToCollisionSection[k]);
                         }
@@ -72,7 +72,7 @@ let Finder = class {
     };
 
     addCollisionPoint(xy) {
-        this.knownCollisions.set((xy.x - 1), (xy.y - 1), 1);
+        this.knownCollisions.set((xy.x), (xy.y), 1);
     }
 
     addKnownTailDodge(xy){
@@ -90,6 +90,7 @@ let Finder = class {
                return i;
             }
         }
+        return -1;
     }
 
     stepsInPath (plannerPath) {
