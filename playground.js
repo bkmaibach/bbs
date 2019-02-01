@@ -1,8 +1,10 @@
 const ndarray = require('ndarray');
 const createPlanner = require('l1-path-finder');
 const _ = require('lodash');
-const states = require('./exampleStates').states;
-const {Finder} = require('./finder');
+const {states} = require('./gamestates/example-states');
+const {TailDodger} = require('./tail-dodger');
+const {TailDodgerSafe} = require('./tail-dodger-safe');
+
 //Log output
 //console.log('path length =', dist)
 //console.log('steps= ', steps)
@@ -12,6 +14,7 @@ const {Finder} = require('./finder');
     //console.log(JSON.stringify());
 } */
 
-let finder = new Finder({x:7, y:5}, states[0]);
-console.log(JSON.stringify(finder.getShortestPath({x: 14, y:14})));
+let dodger = new TailDodger({"x":0,"y":0}, states[1]);
+console.log(JSON.stringify(dodger.getShortestPath({x: 0, y:14})));
+
 

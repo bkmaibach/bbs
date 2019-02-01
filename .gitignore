@@ -36,3 +36,6 @@ npm-debug.log
 # Configuration and secrets
 .env
 
+# Screenshots
+gamestates/*.png
+

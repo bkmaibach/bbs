@@ -1,93 +1,14 @@
 const aStar = require('a-star');
 const _ = require('lodash');
+const {states} = require('./gamestates/example-states');
+const {getIndexOfValue} = require('./util');
 
 let gameState;
 
-let exampleState = {  
-    "game":{  
-       "id":"9b85fabc-7e36-4708-8674-c12df577cf98"
-    },
-    "turn":4,
-    "board":{  
-       "height":19,
-       "width":19,
-       "food":[  
-          {  
-             "x":5,
-             "y":16
-          },
-          {  
-             "x":11,
-             "y":13
-          },
-
-       ],
-       "snakes":[  
-          {  
-             "id":"3fe966d8-4f12-461c-b998-037fa388ab1e",
-             "name":"snek2",
-             "health":96,
-             "body":[  
-                {  
-                   "x":17,
-                   "y":4
-                },
-                {  
-                   "x":16,
-                   "y":4
-                },
-                {  
-                   "x":16,
-                   "y":5
-                }
-             ]
-          },
-          {  
-             "id":"114617e0-d856-4055-a140-20079edd8ed1",
-             "name":"snek4",
-             "health":96,
-             "body":[  
-                {  
-                   "x":16,
-                   "y":12
-                },
-                {  
-                   "x":15,
-                   "y":12
-                },
-                {  
-                   "x":14,
-                   "y":12
-                }
-             ]
-          }
-       ]
-    },
-    "you":{  
-       "id":"3fe966d8-4f12-461c-b998-037fa388ab1e",
-       "name":"snek2",
-       "health":96,
-       "body":[  
-          {  
-             "x":17,
-             "y":4
-          },
-          {  
-             "x":16,
-             "y":4
-          },
-          {  
-             "x":16,
-             "y":5
-          }
-       ]
-    }
- }
-
 const update = (newState) => {
     gameState = newState;
-    if (gameState.turn == 75) {
-       console.log(JSON.stringify(gameState));
+    if (gameState.you.name.toUpperCase() == 'BBS' && gameState.turn % 25 == 0) {
+      //console.log(JSON.stringify(gameState, null, 2));
     }
 };
 const getTurn = () => {
@@ -96,14 +17,32 @@ const getTurn = () => {
 const getMyPosition = () => {
    return gameState.you.body[0];
 }
+const getMyName = () => {
+   return gameState.you.name;
+}
+
+const getMyLength = () => {
+   return gameState.you.body.length;
+}
+
+const getFoodPoints = () => {
+   return gameState.board.food;
+}
+
+const getSnakeLength = (name) => {
+   // console.log(gameState.board.snakes);
+   const snake = gameState.board.snakes.filter((snake) => snake.name == name)[0];
+   return snake.body.length;
+}
 
 const moveInfo = (snakeName, move) => {
    // Returns one of:
    // {type: "wall"}
    // {type: "body"}
-   // {type: "contested", snakeLengths: [3, 4], food: false} - enemy snake(s) neighbors this square
+   // {type: "contested", snakeLengths: [3, 4], food: false} - enemy snake(s) neighbor this square
    // {type: "uncontested", food: true} - uncontested square
    let returnVal = {type: "unknown"};
+
 
    let snake = gameState.board.snakes.filter((snake) => snake.name == snakeName)[0];
    let { x, y } = snake.body[0];
@@ -122,38 +61,56 @@ const moveInfo = (snakeName, move) => {
    let newX = newXY.x;
    let newY = newXY.y;
 
+   console.log(getTurn());
+   console.log("My position: " + JSON.stringify(getMyPosition()));
+   console.log("considering spot: " + JSON.stringify(newXY));
+
    if(newX >= gameState.board.width
       || newX < 0
       || newY >= gameState.board.height
       || newY < 0){
          returnVal.type = "wall";
+         console.log("Move found to collide with wall");
    }
 
-   gameState.board.snakes.forEach((snake) => {
-
-   for (let i = 0; i < snake.body.length - 1; i++) {
-      //console.log(snake.body[i], newXY, _.isEqual(snake.body[i], newXY));
-      if (_.isEqual(snake.body[i], newXY)){
+   gameState.board.snakes.forEach((boardSnake) => {
+   //This will not consider the tip of a tail as a body collision, hence the -1 here:
+   for (let i = 0; i < boardSnake.body.length - 1; i++) {
+      if (_.isEqual(boardSnake.body[i], newXY)){
          returnVal.type = "body";
+         console.log("Move found to collide with body of snake: " + boardSnake.name);
       }
    }
    });
-
    
    const neighbors = rectilinearNeighbors(newXY);
-   const ourName = gameState.you.name;
-   gameState.board.snakes.forEach((snake) => {
-      if (snake.name != ourName){
-         if(neighbors.indexOf(snake.body[0]) > -1){
-               returnVal.type = "contested";
-               returnVal.snakeLengths.push(snake.body.length);
+
+   gameState.board.snakes.forEach((boardSnake) => {
+      if (boardSnake.name != snakeName){
+         // console.log("Checking snake " + boardSnake.name);
+         // console.log("Considering point " + JSON.stringify(newXY));
+         // console.log("neighbors of this point: " + JSON.stringify(neighbors));
+         // console.log("Snake head is at" + JSON.stringify(boardSnake.body[0]));
+         // console.log("getIndexOfValue(neighbors, boardSnake.body[0]) == " + getIndexOfValue(neighbors, boardSnake.body[0]));
+         if(getIndexOfValue(neighbors, boardSnake.body[0]) > -1){
+            console.log("Move found to be contested by: " + boardSnake.name);
+            returnVal.type = "contested";
+            if (!returnVal.snakeLengths) {
+               returnVal.snakeLengths = [];
+            }
+            returnVal.snakeLengths.push(boardSnake.body.length);
+            console.log("returnVal.snakeLengths == " + returnVal.snakeLengths);
          }
       }
    });
 
-   returnVal.type = (returnVal.type == "unknown") ? "uncontested" : returnVal.type;
 
-   returnVal.food = gameState.board.food.indexOf(newXY) > -1;
+   if(returnVal.type == "unknown"){
+      returnVal.type = "uncontested";
+      console.log("Move is free and uncontested");
+   }
+
+   returnVal.food = getIndexOfValue(gameState.board.food, newXY) > -1;
 
    return returnVal;
 }
@@ -175,10 +132,59 @@ const rectilinearDistance = function(a, b) {
     return Math.abs(dx) + Math.abs(dy);
 };
 
+const getMove = function(start, finish){
+   let dx = finish.x - start.x;
+   let dy = finish.y - start.y;
+   if(dx == 1){
+      return 'right';
+   } else if (dx == -1){
+      return 'left';
+   } else if (dy == 1){
+      return 'down';
+   } else if (dy == -1){
+      return 'up';
+   }  
+}
+
+const getAllOccupied = function (){
+   let returnArr = [];
+   gameState.board.snakes.forEach((snake) => {
+      snake.forEach((spot) => {
+         returnArr.push(spot);
+      });
+   });
+   return returnArr;
+}
+
+const safeMove = function(){
+   const myName = getMyName();
+   const moves = ['left','right','up','down'];
+
+   move.forEach((move) => {
+      let info = moveInfo(myName, move)
+      if (info.type == 'uncontested'){
+         return move;
+      } else if (info.type == 'contested'){
+         if (getMyLength() >= Math.max(...info.snakeLengths)){
+            return move;
+         }
+      }
+   });
+   console.log("No safe move could be found, defaulting to up");
+   return 'up';
+}
+
+
 module.exports = {
     update,
     moveInfo,
     getTurn,
-    getMyPosition
+    getMyPosition,
+    getMyName,
+    getMove,
+    getFoodPoints,
+    getSnakeLength,
+    safeMove: safeMove,
+    getAllOccupied
 };
 

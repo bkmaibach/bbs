@@ -10,6 +10,10 @@ const {
 } = require('./handlers.js');
 
 const state = require('./state');
+const _ = require('lodash');
+const {TailDodger} = require('./tail-dodger');
+const {TailDodgerSafe} = require('./tail-dodger-safe');
+
 
 // For deployment to Heroku, the port needs to be set using ENV, so
 // we check for the port number in process.env
@@ -27,11 +31,15 @@ app.use(poweredByHandler);
 app.post('/start', (request, response) => {
   // forward the initial request to the state analyzer upon start
   state.update(request.body);
-
-  let number = Math.floor(Math.random() * Math.floor(16000000));
-  hexString = number.toString(16);
-  if (hexString.length % 2) {
-    hexString = '0' + hexString;
+  let hexString;
+  if (state.getMyName() == 'BBS'){
+    hexString == '000000';
+  }else {
+    let number = Math.floor(Math.random() * Math.floor(16000000));
+    hexString = number.toString(16);
+    if (hexString.length % 2) {
+      hexString = '0' + hexString;
+    }
   }
   // Response data
   const data = {
@@ -41,40 +49,66 @@ app.post('/start', (request, response) => {
   return response.json(data)
 });
 
+let targetXY;
 // Handle POST request to '/move'
 app.post('/move', (request, response) => {
-  //console.log("IN POST /MOVE");
+
+  // console.log("IN POST /MOVE");
   // update the board with the new moves
   state.update(request.body);
-  const moves = ['up','left','down','right'];
-  
+  //const moves = ['up','left','down','right'];
+  const foodPoints = state.getFoodPoints();
+  // console.log(points)
+
   const name = request.body.you.name;
+  let path;
   let move;
-  var moveType;
-  var moveInfo;
   let turn = state.getTurn();
+  let moveFound = false;
+
   let myPosition = state.getMyPosition();
-  let randomInt;
-  let timeout = 0;
-  while(moveType != 'uncontested' && timeout < 30){
-    randomInt = Math.floor(Math.random() * Math.floor(4))
-    move = moves[randomInt];
-    moveInfo = state.moveInfo(name, move);
-    moveType = moveInfo.type;
-    newXY = moveInfo.newXY;
-    timeout++;
-    if (timeout >= 30){
-      move = moves[0];
+  try{
+
+    while (!moveFound){
+
+      if (_.isEqual(myPosition, targetXY) || turn == 0){
+        targetXY = foodPoints[Math.floor(Math.random() * Math.floor(4))];
+      }
+      let dodger = new TailDodgerSafe(myPosition, request.body);
+
+      let moveFound = false;
+      do{
+        path = dodger.getShortestPath(targetXY);
+        move = state.getMove(path[0], path[1]);
+        const info = state.moveInfo(name, move);
+        if(info.type == "contested"){
+          const myLength = state.getSnakeLength(name)
+          const biggestContester = Math.max(...info.snakeLengths);
+          if (myLength <= biggestContester){
+            dodger.addCollisionPoint(path[1]);
+          } else {
+            moveFound = true;
+          }
+        }else {
+          moveFound = true;
+        }
+      } while (!moveFound)
+
+      console.log("next xy: " + JSON.stringify(path[1]));
+      console.log("target xy: " + JSON.stringify(targetXY));
+      console.log("\n");    
+    
+      // Response data
+      return response.json({move});
+    
     }
-  }
-  //console.log(turn, name, myPosition, randomInt, move, newXY, moveType);
-
-  // Response data
-  const data = {
-    move // one of: ['up','left','down','right']
+  } catch (e) {
+    console.log(e);
+    return response.json({"move": state.safeMove()});
   }
 
-  return response.json(data)
+
+
 });
 
 app.post('/end', (request, response) => {
