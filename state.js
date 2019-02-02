@@ -72,7 +72,7 @@ const moveInfo = (snakeName, move) => {
       || newX < 0
       || newY >= gameState.board.height
       || newY < 0){
-         returnVal.type = "wall";
+         if (returnVal.type == "unknown") returnVal.type = "wall";
          console.log("Move found to collide with wall");
    }
 
@@ -80,7 +80,7 @@ const moveInfo = (snakeName, move) => {
    //This will not consider the tip of a tail as a body collision, hence the -1 here:
    for (let i = 0; i < boardSnake.body.length - 1; i++) {
       if (_.isEqual(boardSnake.body[i], newXY)){
-         returnVal.type = "body";
+         if (returnVal.type == "unknown") returnVal.type = "body";
          console.log("Move found to collide with body of snake: " + boardSnake.name);
       }
    }
@@ -97,7 +97,7 @@ const moveInfo = (snakeName, move) => {
          // console.log("getIndexOfValue(neighbors, boardSnake.body[0]) == " + getIndexOfValue(neighbors, boardSnake.body[0]));
          if(getIndexOfValue(neighbors, boardSnake.body[0]) > -1){
             console.log("Move found to be contested by: " + boardSnake.name);
-            returnVal.type = "contested";
+            if (returnVal.type == "unknown") returnVal.type = "contested";
             if (!returnVal.snakeLengths) {
                returnVal.snakeLengths = [];
             }
@@ -130,11 +130,6 @@ const rectilinearNeighbors = function(XY) {
     ];
 }
 
-const rectilinearDistance = function(a, b) {
-    var dx = b[0] - a[0], dy = b[1] - a[1];
-    return Math.abs(dx) + Math.abs(dy);
-};
-
 const getMove = function(start, finish){
    let dx = finish.x - start.x;
    let dy = finish.y - start.y;
@@ -160,20 +155,44 @@ const getAllOccupied = function (){
 }
 
 const safeMove = function(){
+   console.log("safeMove default engaged")
    const myName = getMyName();
    const moves = ['left','right','up','down'];
+   let bestMove = null;
 
-   move.forEach((move) => {
+   moves.forEach((move) => {
       let info = moveInfo(myName, move)
-      if (info.type == 'uncontested'){
-         return move;
-      } else if (info.type == 'contested'){
+      if (info.type == 'contested'){
          if (getMyLength() >= Math.max(...info.snakeLengths)){
-            return move;
+            console.log("Taking point contested by smaller snake by moving: " + move);
+            bestMove = move;
+            return;
          }
       }
    });
-   console.log("No safe move could be found, defaulting to up");
+   if (bestMove != null) return bestMove;
+
+   moves.forEach((move) => {
+      let info = moveInfo(myName, move)
+      if (info.type == 'uncontested'){
+         console.log("Taking uncontested point by moving: " + move);
+         bestMove = move;
+         return;
+      }
+   });
+   if (bestMove != null) return bestMove;
+
+   moves.forEach((move) => {
+      let info = moveInfo(myName, move)
+      if (info.type == 'contested'){
+         console.log("Taking contested point that might not end so well: " + move);
+         bestMove = move;
+         return;
+      }
+   });
+   if (bestMove != null) return bestMove;
+
+   console.log("No safe move could be found, defaulting to up. Sorry snakey :[");
    return 'up';
 }
 

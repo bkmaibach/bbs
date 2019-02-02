@@ -3,7 +3,6 @@ const createPlanner = require('l1-path-finder');
 const _ = require('lodash');
 const {states} = require('./gamestates/example-states');
 const {TailDodger} = require('./tail-dodger');
-const {TailDodgerSafe} = require('./tail-dodger-safe');
 
 //Log output
 //console.log('path length =', dist)

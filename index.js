@@ -12,7 +12,6 @@ const {
 const state = require('./state');
 const _ = require('lodash');
 const {TailDodger} = require('./tail-dodger');
-const {TailDodgerSafe} = require('./tail-dodger-safe');
 
 
 // For deployment to Heroku, the port needs to be set using ENV, so
