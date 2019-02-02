@@ -20,6 +20,9 @@ const getMyPosition = () => {
 const getMyName = () => {
    return gameState.you.name;
 }
+const getSnakes = () => {
+   return gameState.board.snakes;
+}
 
 const getMyLength = () => {
    return gameState.you.body.length;
@@ -174,6 +177,55 @@ const safeMove = function(){
    return 'up';
 }
 
+const nextToFood = function (point) {
+   const foodPoints = getFoodPoints();
+   const neighbors = rectilinearNeighbors(point);
+   let returnVal = false;
+   neighbors.forEach((neighborPoint) => {
+      if (getIndexOfValue(foodPoints, neighborPoint) > -1) {
+         returnVal = true;
+         return;
+      }
+   });
+   return returnVal;
+}
+
+const pointIsContestedByLargerSnake = function (point) {
+   const myName = getMyName();
+   const neighbors = rectilinearNeighbors(point);
+   let returnVal = false;
+   getSnakes().forEach((snake) => {
+      if (snake.name != myName){
+         console.log("checking snake " + snake.name);
+         console.log("point neighbors are" + JSON.stringify(neighbors));
+         console.log("snake head is at " + JSON.stringify(snake.body[0]));
+         if (getIndexOfValue(neighbors, snake.body[0]) > -1) {
+            console.log("snake head was found in neighbor list");
+            if (snake.body.length >= getMyLength()){
+               console.log("snake is too large to ignore");
+               returnVal = true;
+               return;
+            }
+         } else {
+            console.log("Snake head was not found in neighbor list");
+         }
+      }
+   });
+   return returnVal;
+}
+
+const getTakenPoints = function () {
+   let returnArr = [];
+   getSnakes().forEach((snake) => {
+      returnArr = returnArr.concat(snake.body);
+   });
+   return returnArr;
+}
+
+const pointIsTaken = function (point) {
+   const takenPoints = getTakenPoints();
+   return (getIndexOfValue(takenPoints, point) > -1);
+}
 
 module.exports = {
     update,
@@ -184,7 +236,12 @@ module.exports = {
     getMove,
     getFoodPoints,
     getSnakeLength,
-    safeMove: safeMove,
-    getAllOccupied
+    safeMove,
+    getAllOccupied,
+    getSnakes,
+    nextToFood,
+    pointIsContestedByLargerSnake,
+    pointIsTaken,
+    getTakenPoints
 };
 

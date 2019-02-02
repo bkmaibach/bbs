@@ -71,29 +71,16 @@ app.post('/move', (request, response) => {
 
     while (!moveFound){
 
-      if (_.isEqual(myPosition, targetXY) || turn == 0){
+      if (_.isEqual(myPosition, targetXY) || turn == 0 || state.pointIsTaken(targetXY)){
         targetXY = foodPoints[Math.floor(Math.random() * Math.floor(4))];
       }
-      let dodger = new TailDodgerSafe(myPosition, request.body);
+      let dodger = new TailDodger(myPosition, state);
+      path = dodger.getShortestPath(targetXY);
+      move = state.getMove(path[0], path[1]);
 
-      let moveFound = false;
-      do{
-        path = dodger.getShortestPath(targetXY);
-        move = state.getMove(path[0], path[1]);
-        const info = state.moveInfo(name, move);
-        if(info.type == "contested"){
-          const myLength = state.getSnakeLength(name)
-          const biggestContester = Math.max(...info.snakeLengths);
-          if (myLength <= biggestContester){
-            dodger.addCollisionPoint(path[1]);
-          } else {
-            moveFound = true;
-          }
-        }else {
-          moveFound = true;
-        }
-      } while (!moveFound)
-
+      console.log("turn: " + JSON.stringify(turn));
+      console.log("current xy: " + JSON.stringify(path[0]));
+      console.log("move: " + JSON.stringify(move));
       console.log("next xy: " + JSON.stringify(path[1]));
       console.log("target xy: " + JSON.stringify(targetXY));
       console.log("\n");    
@@ -103,8 +90,10 @@ app.post('/move', (request, response) => {
     
     }
   } catch (e) {
-    console.log(e);
-    return response.json({"move": state.safeMove()});
+    //console.log(e);
+    let move = state.safeMove();
+    console.log("Defaulting to safe move " + move);
+    return response.json({move});
   }
 
 

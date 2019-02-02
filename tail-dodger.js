@@ -9,7 +9,7 @@ let TailDodger = class {
 
     constructor(xy, gameState) {
         this.snakeHead = xy;
-        this.gameState = gameState;
+        this.state = gameState;
         this.steps = [];
 
         this.knownCollisions = ndarray([
@@ -37,21 +37,26 @@ let TailDodger = class {
     getShortestPath ( endXY) {
         //Create path planner
         var planner = createPlanner(this.knownCollisions);
-        
+
         //Find path
         var path = []
         var dist = planner.search((this.snakeHead.x),(this.snakeHead.y),  (endXY.x),(endXY.y),  path);
         const steps = this.stepsInPath(path);
     
-        const snakes = this.gameState.board.snakes;
+        const snakes = this.state.getSnakes();
         for(let i = 1, stepsLength = steps.length; i < stepsLength; i++){
             for(let j = 0, numSnakes = snakes.length; j < numSnakes; j++){
                 let possibleCollisionIndex = getIndexOfValue(snakes[j].body, steps[i]);;
     
                 if(possibleCollisionIndex > -1  && !this.isKnownTailDodge(steps[i])){
                     const stepsToOccupy = i;
-                    const stepsToVacate = snakes[j].body.length - possibleCollisionIndex;
-                    getIndexOfValue(snakes[j].body[0])
+                    let stepsToVacate = snakes[j].body.length - possibleCollisionIndex;
+
+                    if (this.state.nextToFood(snakes[j].body[0])){
+                        console.log("Food next to " + snakes[j].name + " means an extra step is needed to vacate possible collision point");
+                        stepsToVacate++;
+                    }
+                    
                     const tailDodge = stepsToOccupy >= stepsToVacate;
                     if (!tailDodge){
                         let headToCollisionSection = snakes[j].body.slice(0, possibleCollisionIndex+1);
@@ -76,6 +81,11 @@ let TailDodger = class {
         }
         if (typeof path[0] == 'undefined'){
             throw "EXCEPTION: no path could be found!";
+        }
+        if (this.state.pointIsContestedByLargerSnake(steps[1])) {
+            console.log("The first step of this path is contested by a snake of larger or equal size. Marking point and recalculating...");
+            this.addCollisionPoint(steps[1]);
+            return this.getShortestPath(endXY);
         }
         this.steps = steps;
         return steps;
