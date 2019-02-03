@@ -77,8 +77,7 @@ const moveInfo = (snakeName, move) => {
    }
 
    gameState.board.snakes.forEach((boardSnake) => {
-   //This will not consider the tip of a tail as a body collision, hence the -1 here:
-   for (let i = 0; i < boardSnake.body.length - 1; i++) {
+   for (let i = 0; i < boardSnake.body.length; i++) {
       if (_.isEqual(boardSnake.body[i], newXY)){
          if (returnVal.type == "unknown") returnVal.type = "body";
          console.log("Move found to collide with body of snake: " + boardSnake.name);
@@ -155,42 +154,45 @@ const getAllOccupied = function (){
 }
 
 const safeMove = function(){
-   console.log("safeMove default engaged")
+   console.log("SAFEMOVE DEFAULT ENGAGED")
    const myName = getMyName();
    const moves = ['left','right','up','down'];
    let bestMove = null;
+   let info;
 
-   moves.forEach((move) => {
-      let info = moveInfo(myName, move)
+   for(let i = 0; i < 4; i++){
+      console.log("Checking for offensive safeMove");
+      info = moveInfo(myName, moves[i])
+      console.log(info.type);
       if (info.type == 'contested'){
-         if (getMyLength() >= Math.max(...info.snakeLengths)){
-            console.log("Taking point contested by smaller snake by moving: " + move);
-            bestMove = move;
-            return;
+         if (getMyLength() > Math.max(...info.snakeLengths)){
+            console.log("Taking point contested by smaller snake by moving: " + moves[i]);
+            return moves[i];
          }
       }
-   });
-   if (bestMove != null) return bestMove;
+   }
 
-   moves.forEach((move) => {
-      let info = moveInfo(myName, move)
+   for(let i = 0; i < 4; i++){
+      console.log("Checking for uncontested safeMove");
+      info = moveInfo(myName, moves[i]);
+      console.log(info.type);
+      console.log(info.type == 'uncontested');
       if (info.type == 'uncontested'){
-         console.log("Taking uncontested point by moving: " + move);
-         bestMove = move;
-         return;
+         console.log("Taking uncontested point by moving: " + moves[i]);
+         return moves[i];
       }
-   });
-   if (bestMove != null) return bestMove;
+   }
 
-   moves.forEach((move) => {
-      let info = moveInfo(myName, move)
+   for(let i = 0; i < 4; i++){
+      console.log("Checking for contested safeMove");
+      info = moveInfo(myName, moves[i]);
+      console.log(info.type);
+      console.log(info.type == 'contested');
       if (info.type == 'contested'){
-         console.log("Taking contested point that might not end so well: " + move);
-         bestMove = move;
-         return;
+         console.log("Taking contested point that might not end so well: " + moves[i]);
+         return moves[i];
       }
-   });
-   if (bestMove != null) return bestMove;
+   }
 
    console.log("No safe move could be found, defaulting to up. Sorry snakey :[");
    return 'up';
