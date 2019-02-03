@@ -59,35 +59,31 @@ app.post('/move', (request, response) => {
   const foodPoints = state.getFoodPoints();
   // console.log(points)
 
-  const name = request.body.you.name;
   let path;
   let move;
   let turn = state.getTurn();
-  let moveFound = false;
 
   let myPosition = state.getMyPosition();
+
   try{
 
-    while (!moveFound){
-
-      if (_.isEqual(myPosition, targetXY) || turn == 0 || state.pointIsTaken(targetXY)){
-        targetXY = foodPoints[Math.floor(Math.random() * Math.floor(4))];
-      }
-      let dodger = new TailDodger(myPosition, state);
-      path = dodger.getShortestPath(targetXY);
-      move = state.getMove(path[0], path[1]);
-
-      console.log("turn: " + JSON.stringify(turn));
-      console.log("current xy: " + JSON.stringify(path[0]));
-      console.log("move: " + JSON.stringify(move));
-      console.log("next xy: " + JSON.stringify(path[1]));
-      console.log("target xy: " + JSON.stringify(targetXY));
-      console.log("\n");    
-    
-      // Response data
-      return response.json({move});
-    
+    if (_.isEqual(myPosition, targetXY) || turn == 0 || state.pointIsTaken(targetXY)){
+      targetXY = foodPoints[Math.floor(Math.random() * Math.floor(4))];
     }
+    let dodger = new TailDodger(myPosition, state);
+    path = dodger.getShortestPath(targetXY);
+    move = state.getMove(path[0], path[1]);
+
+    console.log("turn: " + JSON.stringify(turn));
+    console.log("current xy: " + JSON.stringify(path[0]));
+    console.log("move: " + JSON.stringify(move));
+    console.log("next xy: " + JSON.stringify(path[1]));
+    console.log("target xy: " + JSON.stringify(targetXY));
+    console.log("\n");    
+  
+    // Response data
+    return response.json({move});
+    
   } catch (e) {
     //console.log(e);
     let move = state.safeMove();

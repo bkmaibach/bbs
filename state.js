@@ -161,9 +161,7 @@ const safeMove = function(){
    let info;
 
    for(let i = 0; i < 4; i++){
-      console.log("Checking for offensive safeMove");
       info = moveInfo(myName, moves[i])
-      console.log(info.type);
       if (info.type == 'contested'){
          if (getMyLength() > Math.max(...info.snakeLengths)){
             console.log("Taking point contested by smaller snake by moving: " + moves[i]);
@@ -173,10 +171,7 @@ const safeMove = function(){
    }
 
    for(let i = 0; i < 4; i++){
-      console.log("Checking for uncontested safeMove");
       info = moveInfo(myName, moves[i]);
-      console.log(info.type);
-      console.log(info.type == 'uncontested');
       if (info.type == 'uncontested'){
          console.log("Taking uncontested point by moving: " + moves[i]);
          return moves[i];
@@ -184,10 +179,7 @@ const safeMove = function(){
    }
 
    for(let i = 0; i < 4; i++){
-      console.log("Checking for contested safeMove");
       info = moveInfo(myName, moves[i]);
-      console.log(info.type);
-      console.log(info.type == 'contested');
       if (info.type == 'contested'){
          console.log("Taking contested point that might not end so well: " + moves[i]);
          return moves[i];
