@@ -32,8 +32,8 @@ app.post('/start', (request, response) => {
   // forward the initial request to the state analyzer upon start
   state.update(request.body);
   let hexString;
-  if (state.getMyName() == 'BBS'){
-    hexString == '000000';
+  if (process.env.NODE_ENV == 'production'){
+    hexString == '11FF11';
   }else {
     let number = Math.floor(Math.random() * Math.floor(16000000));
     hexString = number.toString(16);
