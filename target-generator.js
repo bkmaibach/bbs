@@ -1,3 +1,4 @@
+const {shuffle} = require('./util');
 let TargetGenerator = class {
 
     constructor(gameState) {

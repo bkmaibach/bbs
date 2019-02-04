@@ -195,7 +195,7 @@ const safeMove = function(){
       if (moveInfos[i].head){
          console.log("Last resort kamikaze move into another snake head: " + moves[i]);
          return moves[i];
-      }could
+      }
    }
 
    console.log("No safe move could be found, defaulting to up. Sorry snakey :[");
