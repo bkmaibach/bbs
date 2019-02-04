@@ -33,7 +33,7 @@ app.post('/start', (request, response) => {
   state.update(request.body);
   let hexString;
   if (process.env.NODE_ENV == 'production'){
-    hexString == '11FF11';
+    hexString = '11FF11';
   }else {
     let number = Math.floor(Math.random() * Math.floor(16000000));
     hexString = number.toString(16);
