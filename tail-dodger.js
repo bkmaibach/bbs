@@ -80,7 +80,7 @@ let TailDodger = class {
             }
         }
         if (typeof path[0] == 'undefined'){
-            throw "EXCEPTION: no path could be found!";
+            return null;
         }
         if (this.state.pointIsContestedByLargerSnake(steps[1])) {
             console.log("The first step of this path is contested by a snake of larger or equal size. Marking point and recalculating...");

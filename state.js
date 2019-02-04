@@ -79,7 +79,13 @@ const moveInfo = (snakeName, move) => {
    gameState.board.snakes.forEach((boardSnake) => {
    for (let i = 0; i < boardSnake.body.length; i++) {
       if (_.isEqual(boardSnake.body[i], newXY)){
-         if (returnVal.type == "unknown") returnVal.type = "body";
+         if (returnVal.type == "unknown") {
+            returnVal.type = "body";
+         }
+         if (i == 0){
+            //special note that body point is a head
+            returnVal.head = true;
+         }
          console.log("Move found to collide with body of snake: " + boardSnake.name);
       }
    }
@@ -157,13 +163,14 @@ const safeMove = function(){
    console.log("SAFEMOVE DEFAULT ENGAGED")
    const myName = getMyName();
    const moves = ['left','right','up','down'];
-   let bestMove = null;
-   let info;
+   let moveInfos = [];
+   moves.forEach((move) => {
+      moveInfos.push(moveInfo(myName, move))
+   });
 
    for(let i = 0; i < 4; i++){
-      info = moveInfo(myName, moves[i])
-      if (info.type == 'contested'){
-         if (getMyLength() > Math.max(...info.snakeLengths)){
+      if (moveInfos[i].type == 'contested'){
+         if (getMyLength() > Math.max(...moveInfos[i].snakeLengths)){
             console.log("Taking point contested by smaller snake by moving: " + moves[i]);
             return moves[i];
          }
@@ -171,19 +178,24 @@ const safeMove = function(){
    }
 
    for(let i = 0; i < 4; i++){
-      info = moveInfo(myName, moves[i]);
-      if (info.type == 'uncontested'){
+      if (moveInfos[i].type == 'uncontested'){
          console.log("Taking uncontested point by moving: " + moves[i]);
          return moves[i];
       }
    }
 
    for(let i = 0; i < 4; i++){
-      info = moveInfo(myName, moves[i]);
-      if (info.type == 'contested'){
+      if (moveInfos[i].type == 'contested'){
          console.log("Taking contested point that might not end so well: " + moves[i]);
          return moves[i];
       }
+   }
+
+   for(let i = 0; i < 4; i++){
+      if (moveInfos[i].head){
+         console.log("Last resort kamikaze move into another snake head: " + moves[i]);
+         return moves[i];
+      }could
    }
 
    console.log("No safe move could be found, defaulting to up. Sorry snakey :[");
@@ -209,9 +221,9 @@ const pointIsContestedByLargerSnake = function (point) {
    let returnVal = false;
    getSnakes().forEach((snake) => {
       if (snake.name != myName){
-         console.log("checking snake " + snake.name);
-         console.log("point neighbors are" + JSON.stringify(neighbors));
-         console.log("snake head is at " + JSON.stringify(snake.body[0]));
+         // console.log("checking snake " + snake.name);
+         // console.log("point neighbors are" + JSON.stringify(neighbors));
+         // console.log("snake head is at " + JSON.stringify(snake.body[0]));
          if (getIndexOfValue(neighbors, snake.body[0]) > -1) {
             console.log("snake head was found in neighbor list");
             if (snake.body.length >= getMyLength()){
@@ -219,8 +231,6 @@ const pointIsContestedByLargerSnake = function (point) {
                returnVal = true;
                return;
             }
-         } else {
-            console.log("Snake head was not found in neighbor list");
          }
       }
    });

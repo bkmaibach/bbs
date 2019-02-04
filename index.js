@@ -12,6 +12,7 @@ const {
 const state = require('./state');
 const _ = require('lodash');
 const {TailDodger} = require('./tail-dodger');
+const {TargetGenerator} = require('./target-generator');
 
 
 // For deployment to Heroku, the port needs to be set using ENV, so
@@ -49,49 +50,48 @@ app.post('/start', (request, response) => {
 });
 
 let targetXY;
+const targetGen = new TargetGenerator();
 // Handle POST request to '/move'
 app.post('/move', (request, response) => {
-
-  // console.log("IN POST /MOVE");
-  // update the board with the new moves
-  state.update(request.body);
-  //const moves = ['up','left','down','right'];
-  const foodPoints = state.getFoodPoints();
-  // console.log(points)
-
-  let path;
-  let move;
-  let turn = state.getTurn();
-
-  let myPosition = state.getMyPosition();
-
   try{
+    // update the board with the new moves
+    state.update(request.body);
 
-    if (_.isEqual(myPosition, targetXY) || turn == 0 || state.pointIsTaken(targetXY)){
-      targetXY = foodPoints[Math.floor(Math.random() * Math.floor(4))];
-    }
+    let path = null;
+    let move = null;
+    let turn = state.getTurn();
+    let myPosition = state.getMyPosition();
+    let targets = targetGen.getSortedTargets(state);
     let dodger = new TailDodger(myPosition, state);
-    path = dodger.getShortestPath(targetXY);
-    move = state.getMove(path[0], path[1]);
+
+    //if (_.isEqual(myPosition, targetXY) || turn == 0 || state.pointIsTaken(targetXY)){}
+    
+    for (let i = 0; i < targets.length; i++){
+      targetXY = targets[i];
+      path = dodger.getShortestPath(targetXY);
+      if (path != null){
+        move = state.getMove(path[0], path[1]);
+        break;
+      }
+    }
+
+    if (move == null){
+      move = state.safeMove();
+    }
 
     console.log("turn: " + JSON.stringify(turn));
-    console.log("current xy: " + JSON.stringify(path[0]));
-    console.log("move: " + JSON.stringify(move));
-    console.log("next xy: " + JSON.stringify(path[1]));
+    console.log("current xy: " + JSON.stringify(myPosition));
     console.log("target xy: " + JSON.stringify(targetXY));
-    console.log("\n");    
-  
+    console.log("path projection: " + JSON.stringify(path));
+    console.log("move: " + JSON.stringify(move));
+    console.log("\n");
+
     // Response data
     return response.json({move});
-    
-  } catch (e) {
-    //console.log(e);
-    let move = state.safeMove();
-    console.log("Defaulting to safe move " + move);
-    return response.json({move});
+
+  } catch (e){
+    console.log(e);
   }
-
-
 
 });
 
