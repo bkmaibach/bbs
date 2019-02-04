@@ -32,6 +32,14 @@ const getFoodPoints = () => {
    return gameState.board.food;
 }
 
+const getHeight = () => {
+   return gameState.board.height;
+}
+
+const getWidth = () => {
+   return gameState.board.width;
+}
+
 const getSnakeLength = (name) => {
    // console.log(gameState.board.snakes);
    const snake = gameState.board.snakes.filter((snake) => snake.name == name)[0];
@@ -265,6 +273,8 @@ module.exports = {
     nextToFood,
     pointIsContestedByLargerSnake,
     pointIsTaken,
-    getTakenPoints
+    getTakenPoints,
+    getHeight,
+    getWidth
 };
 

@@ -11,8 +11,8 @@ let TailDodger = class {
         this.snakeHead = xy;
         this.state = gameState;
         this.steps = [];
-        const height = gameState.board.height;
-        const width = gameState.board.width;
+        const height = gameState.getHeight();
+        const width = gameState.getWidth();
         const numCells = height * width;
         let ndArrayParam = [];
         // The ND array requires an array of width * height 0's to start
