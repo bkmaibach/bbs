@@ -30,7 +30,7 @@
     "node": "8.x"
   },
   "scripts": {
-    "start": "PORT=9001 nodemon index.js",
+    "start": "PORT = 9002 & nodemon index.js",
     "preinstall": "rm package-lock.json"
   }
 }
